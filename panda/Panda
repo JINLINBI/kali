@@ -1,0 +1,90 @@
+#!/usr/bin/env python
+#coding:utf-8
+from  optparse import OptionParser
+import itertools
+import os
+import sys
+class Panda():
+    def __init__(self):
+	usage="./Panda.py [-i< input filename>] [-o <output filename>]  keyword1[,keyword2,...]"
+        version="Panda 1.1 version "
+	parser=OptionParser(usage)
+	parser.add_option("-i","--infile",dest="FILE",
+			type="string",
+			help="import file contains keywords.")
+	parser.add_option("-o","--outfile",dest="OUTFILE",default="passwd.txt",
+			type="string",
+			help="outfile's name generated.")
+	parser.add_option("-m","--mini",dest="MINI",default=6,
+			type="int",
+			help="the mini length of each password")
+	parser.add_option("-M","--max",dest="MAX",default=15,
+			type="int",
+			help="the max length of each password")
+	parser.add_option("-r",dest="r",action="store",default=1,
+			type="int",
+			help="the mini iterate numbers ."
+			)
+	parser.add_option("-R",dest="R",action="store",default=3,
+			type="int",
+			help="the max iterate numbers."
+			)
+	parser.add_option("-P",dest="PIPE",action="store_true",default=None,
+			help="use pipe for another program."
+			)
+        self.options,self.args=parser.parse_args()
+        self.dict=self.dict()
+        try:
+            if self.options.PIPE:
+                self.printpasswd()
+            else :
+                self.write()
+        except:
+            print "Stopping program !!!!!!"
+    def printpasswd(self):
+        passwd=''
+        for x in self.dict:
+            for y in x:
+                passwd=passwd.join(y)
+                if self.options.MINI<len(passwd)<self.options.MAX:
+                    print passwd
+                passwd=''
+    def write(self):
+        if self.options.OUTFILE is not None and os.path.exists(self.options.OUTFILE):
+	    file = self.options.OUTFILE
+ 	    print 'create dic file passwd.txt'
+        try:
+            f=open(file,'w+')
+            passwd=""
+            for x in self.dict:
+                for y in x:
+                    passwd=passwd.join(y)
+                    if self.options.MINI<len(passwd)<self.options.MAX:
+                        f.write(passwd)
+                        f.write('\n')
+                    passwd=''
+            f.close()
+	    print 'Done'
+        except:
+            print 'write output file error!!'
+    def dict(self):
+        args=[]
+        if self.options.FILE is not None and os.path.exists(self.options.FILE):
+            fp=open(self.options.FILE,'r')
+            done=False
+            while not done:
+                i=fp.readline()
+                if(i!=''):
+                    args.append(i.rstrip())
+                else :
+                    done=True
+            fp.close()
+        self.p=[]
+        for x in range(self.options.r,self.options.R+1):
+            if args:
+                self.p.append((itertools.product([i for i in args],repeat=x),))
+            else:
+                self.p.append((itertools.product([i for i in self.args],repeat=x),))
+        return itertools.chain(*(self.p))
+if __name__=='__main__':
+    panda=Panda()
