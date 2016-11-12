@@ -6,10 +6,10 @@ import os
 import sys
 class Panda():
     def __init__(self):
-	usage="./Panda.py [-i< input filename>] [-o <output filename>]  keyword1[,keyword2,...]"
+	usage="./Panda.py [-i< input filename>] [-o <output filename>]  [keyword1[,keyword2,...]]"
         version="Panda 1.1 version "
 	parser=OptionParser(usage)
-	parser.add_option("-i","--infile",dest="FILE",
+	parser.add_option("-i","--infile",dest="FILE",default=None,
 			type="string",
 			help="import file contains keywords.")
 	parser.add_option("-o","--outfile",dest="OUTFILE",default="passwd.txt",
@@ -29,10 +29,16 @@ class Panda():
 			type="int",
 			help="the max iterate numbers."
 			)
+	parser.add_option("-p",dest="PRINT",action="store_true",default=None,
+                        help="usually use with -P: print the information of  generating file's size."
+			)
 	parser.add_option("-P",dest="PIPE",action="store_true",default=None,
 			help="use pipe for another program."
 			)
         self.options,self.args=parser.parse_args()
+        if self.options.FILE is None  and len(self.args)==0:
+            print parser.print_help()
+            sys.exit()
         self.dict=self.dict()
         try:
             if self.options.PIPE:
@@ -41,6 +47,17 @@ class Panda():
                 self.write()
         except:
             print "Stopping program !!!!!!"
+    def calculate(self,dic):
+        Sum=0
+        result=0
+        for i in dic:
+            Sum+=len(i)
+        summary=0
+        length=len(dic)
+        for x in range(self.options.r-1,self.options.R):
+            summary=summary*length+Sum*length**x
+            result+=summary+length**(x+1)
+        return result
     def printpasswd(self):
         passwd=''
         for x in self.dict:
@@ -50,9 +67,12 @@ class Panda():
                     print passwd
                 passwd=''
     def write(self):
-        if self.options.OUTFILE is not None and os.path.exists(self.options.OUTFILE):
-	    file = self.options.OUTFILE
+        if  os.path.exists(self.options.OUTFILE):
+	    file ="passwd.txt" 
  	    print 'create dic file passwd.txt'
+        else :
+	    file = self.options.OUTFILE
+            print "create dic file %s ."%self.options.OUTFILE
         try:
             f=open(file,'w+')
             passwd=""
@@ -85,6 +105,10 @@ class Panda():
                 self.p.append((itertools.product([i for i in args],repeat=x),))
             else:
                 self.p.append((itertools.product([i for i in self.args],repeat=x),))
+        if args and self.options.PRINT:
+            print "generating %s byte of file including unfiltered words"%self.calculate(args)
+        elif self.options.PRINT:
+            print "generating %s byte of file"%(self.calculate(self.args))
         return itertools.chain(*(self.p))
 if __name__=='__main__':
     panda=Panda()
