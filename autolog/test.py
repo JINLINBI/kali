@@ -57,8 +57,8 @@ class Auto(object):
                 page=self.s.post(create_url,data=url_data).text
                 return page
 class Readfile(object):
-	def __init__(self):
-		fp=open("account.txt","r")
+	def __init__(self,filename):
+		fp=open(filename,"r")
 		isU=True
 		self.username=[]
 		self.password=[]
@@ -89,9 +89,10 @@ class Readfile(object):
 				self.biaomessage.append(i.rstrip())
 			isU=not isU
 if __name__=='__main__':
-	fid=["18555","14626","17644"]
+        filename=raw_input("account filename:")
+	fid=["18555","20338","14626","17644","16300"]
 	albumid="2129127"
-	user=Readfile()
+	user=Readfile(filename)
 	for i in range(len(user.username)):
 	        auto=Auto()
 		auto.login(user.username[i],user.password[i])
@@ -104,3 +105,4 @@ if __name__=='__main__':
                             num=(int)(random.random()*len(user.xuemessage))
         		    auto.create(fid[k],user.xuetitle[num],user.xuemessage[num],albumid).rstrip()
                             print "[+]帐号:"+user.username[i]+"发帖["+user.xuetitle[num]+"]"+user.xuemessage[num]
+                        sleep(5000)
