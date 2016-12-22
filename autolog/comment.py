@@ -74,6 +74,7 @@ class Auto(object):
             else :
                 return "not found"
         def comment(self,tid,fid,message):
+            post_url="http://bbs.pcauto.com.cn/action/post/create.ajax"
 	    url_data={
 		    "tid":tid,
 		    "fid":fid,
@@ -84,6 +85,7 @@ class Auto(object):
                     "minContentLength":1,
                     "maxContentLength":500000
 	    }
+            self.s.post(post_url,url_data)
         def getuserid(self):
             topic_url="http://my.pcauto.com.cn/forum/index.jsp"
             page=self.s.get(topic_url).text
@@ -113,6 +115,9 @@ class Readfile(object):
 		self.biaomessage=[]
                 self.matitle=[]
                 self.mamessage=[]
+                self.fid=[]
+                self.tid=[]
+                self.comment=[]
 		for i in fp:
 		    if isU:
 			self.username.append(i.rstrip())
@@ -143,61 +148,33 @@ class Readfile(object):
 			else:
 				self.mamessage.append(i.rstrip())
 			isU=not isU
-
+                fp=open("write.txt","r")
+                isU=True
+                for i in fp:
+                    if isU:
+                        self.tid.append(i.rstrip())
+                    else:
+                        self.fid.append(i.rstrip())
+                    isU=not isU
+                fp=open("comment.txt","r")
+                for i in fp:
+                    self.comment.append(i.rstrip())
 if __name__=='__main__':
         #filename=raw_input("Account filename:")
         filename="account.txt"
         #fid={'mazida':'19536','biaozhi':'16725','xuefolan':"14626",'xuefolan':"17644",'xuefolan':'20338',"xuefolan":"16300"}
         fid=['19536','14626','16725','17644','24056','17670','19865','20360','15151','17686','17128','17085','17287','17654','19565','20095','14360','14793','21685','17695','17281','16300','17278','17643','18555','16885','17282','23956','17297','17160','17271','14678','17285','00000','23106','15221','23565','17005','24715','20330','20338']
-	albumid="2129127"
 	user=Readfile(filename)
-        test=True
-        #test=False
-        fp=open("write.txt","w")
+        count=1
+        v=0
 	for i in range(len(user.username)):
-	        auto=Auto()
-		auto.login(user.username[i],user.password[i])
-                end=False
-                for k in range(0,len(fid)):
-                    if not end and not test:
-                        if fid[k]=='00000':
-                            end=True
-                        elif k==0:
-                            num=(int)(random.random()*len(user.mamessage))
-                            if auto.create(fid[k],user.matitle[num],user.mamessage[num],albumid):
-                                print "[\033[1;32m+\033[0;0m]帐号:"+user.username[i]+"发帖["+user.matitle[num]+"]"+user.mamessage[num]
-                            else:
-                                print "[\033[1;31m-\033[0;0m]帐号:"+user.username[i]+"发帖失败!"
-                                break
-                        elif k%2==0:
-                            num=(int)(random.random()*len(user.biaomessage))
-                            if auto.create(fid[k],user.biaotitle[num],user.biaomessage[num],albumid):
-                                print "[\033[1;32m+\033[0;0m]帐号:"+user.username[i]+"发帖["+user.biaotitle[num]+"]"+user.biaomessage[num]
-                            else:
-                                print "[\033[1;31m-\033[0;0m]帐号:"+user.username[i]+"发帖失败!"
-                                break
-                        elif k%2==1:
-                            num=(int)(random.random()*len(user.xuemessage))
-                            if auto.create(fid[k],user.xuetitle[num],user.xuemessage[num],albumid):
-                                print "[\033[1;32m+\033[0;0m]帐号:"+user.username[i]+"发帖["+user.xuetitle[num]+"]"+user.xuemessage[num]
-                            else :
-                                print "[\033[1;31m-\033[0;0m]帐号:"+user.username[i]+"发帖失败!"
-                                break
-                    elif not test:
-                            num=(int)(random.random()*len(user.biaomessage))
-                            if auto.create(fid[k],user.biaotitle[num],user.biaomessage[num],albumid):
-                                print "[\033[1;32m+\033[0;0m]帐号:"+user.username[i]+"发帖["+user.biaotitle[num]+"]"+user.biaomessage[num]
-                            else:
-                                print "[\033[1;31m-\033[0;0m]帐号:"+user.username[i]+"发帖失败!"
-                                break
-                    elif test:
-                        #tid=auto.forum(fid[k])
-                        userid=auto.getuserid()
-                        print "userid:"+userid
-                        if userid:
-                            tid=auto.gettid(userid)
-                            for i,j in zip(auto.tid,auto.fid):
-                                fp.write("%s\n%s\n"%(i,j))
-                        break
-                    time.sleep(15)
-        fp.close()
+            auto=Auto()
+            auto.login(user.username[i],user.password[i])
+            for k in range(v,v+20):
+                com=(int)(random.random()*len(user.comment))
+                #auto.comment("13133613","14678",user.comment[com])
+                auto.comment(user.tid[k],user.fid[k],user.comment[com])
+                print "%s:[\033[1;32m+\033[0;0m]%s一个回复帖子(%s):%s"%(count,user.username[i],user.tid[k],user.comment[com])
+                count+=1
+            v=v+20
+            print "切换用户回复"
