@@ -3,6 +3,7 @@
 import requests,time
 import re
 import random
+import time
 class Auto(object):
 	def __init__(self):
 		self.s=requests.session()	
@@ -38,7 +39,7 @@ class Auto(object):
 		s_login=self.s.post(login_url,data=url_data,headers=headers,verify=False)
 		#html_soup = BeautifulSoup(s_login_text,'lxml')
 		#xsrf = html_soup.find("script",{"":"href"})['value']
-	def create(self,fid,title,message,albumid):
+	def create(self,fid,title,message,albumid,fp):
                 create_url="http://bbs.pcauto.com.cn/action/topic/create.ajax"
 		self.s.get("http://bbs.pcauto.com.cn/new/post.do?fid=%s"%fid)
 		url_data={
@@ -56,51 +57,16 @@ class Auto(object):
 		}
                 page=self.s.post(create_url,data=url_data).text
                 pattern=re.compile(r'</p>')
+                tidpattern=re.compile(r'"tid":(\d+)')
                 match=pattern.findall(page)
+                tidmatch=tidpattern.findall(page)
+               # if tidmatch:
+                #    for i in tidmatch:
+                 #       fp.write("%s\n%s\n")%(i,fid)
                 if match:
                     return False
                 else :
                     return True
-        def forum(self,fid):
-            f_url="http://bbs.pcauto.com.cn/forum-%s.html"%fid
-            page=self.s.get(f_url).text
-
-            #pattern=re.compile(r'tid="(.+)" ')
-            #pattern=re.compile(r'userID=(d+)')
-            #pattern=re.compile(r'<tbody>(.+)</tbody>')
-            match=pattern.findall(page)
-            if match:
-                return match
-            else :
-                return "not found"
-        def comment(self,tid,fid,message):
-	    url_data={
-		    "tid":tid,
-		    "fid":fid,
-		    "message":message,
-                    "needCaptcha":'false',
-                    "captcha":'',
-		    "sengMsg":'true',
-                    "minContentLength":1,
-                    "maxContentLength":500000
-	    }
-        def getuserid(self):
-            topic_url="http://my.pcauto.com.cn/forum/index.jsp"
-            page=self.s.get(topic_url).text
-            pattern=re.compile(r'userId=(.+)&')
-            match=pattern.findall(page)[0]
-            if match:
-                return match
-            else:
-                return "not found"
-        def gettid(self,userid):
-            topic_url="http://bbs.pcauto.com.cn/intf/user/_topics.jsp?unreviewActivity=1&userId=%s&callback=show&pageSize=1500&pageNo=1"%userid
-            page=self.s.get(topic_url).text
-            pattern=re.compile(r'"topicId":(\d+),')
-            fidpattern=re.compile(r'"fid":(\d+),')
-            #pattern=re.compile(r'userId=(d+)')
-            self.tid=pattern.findall(page)
-            self.fid=fidpattern.findall(page)
 class Readfile(object):
 	def __init__(self,filename):
 		fp=open(filename,"r")
@@ -147,13 +113,14 @@ class Readfile(object):
 if __name__=='__main__':
         #filename=raw_input("Account filename:")
         filename="account.txt"
+        #fp=open(time.strftime("%Y-%m-%d %H:%M:%S",time.localtime())+".log","w+")
         #fid={'mazida':'19536','biaozhi':'16725','xuefolan':"14626",'xuefolan':"17644",'xuefolan':'20338',"xuefolan":"16300"}
         fid=['19536','14626','16725','17644','24056','17670','19865','20360','15151','17686','17128','17085','17287','17654','19565','20095','14360','14793','21685','17695','17281','16300','17278','17643','18555','16885','17282','23956','17297','17160','17271','14678','17285','00000','23106','15221','23565','17005','24715','20330','20338']
 	albumid="2129127"
 	user=Readfile(filename)
-        test=True
-        #test=False
-        fp=open("write.txt","w")
+        #test=True
+        test=False
+        fp=''
 	for i in range(len(user.username)):
 	        auto=Auto()
 		auto.login(user.username[i],user.password[i])
@@ -163,41 +130,33 @@ if __name__=='__main__':
                         if fid[k]=='00000':
                             end=True
                         elif k==0:
-                            num=(int)(random.random()*len(user.mamessage))
-                            if auto.create(fid[k],user.matitle[num],user.mamessage[num],albumid):
+                            num=i#(int)(random.random()*2)+i
+                            if auto.create(fid[k],user.matitle[num],user.mamessage[num],albumid,fp):
                                 print "[\033[1;32m+\033[0;0m]帐号:"+user.username[i]+"发帖["+user.matitle[num]+"]"+user.mamessage[num]
                             else:
                                 print "[\033[1;31m-\033[0;0m]帐号:"+user.username[i]+"发帖失败!"
                                 break
                         elif k%2==0:
-                            num=(int)(random.random()*len(user.biaomessage))
-                            if auto.create(fid[k],user.biaotitle[num],user.biaomessage[num],albumid):
+                            num=i#(int)(random.random()*2)+i
+                            if auto.create(fid[k],user.biaotitle[num],user.biaomessage[num],albumid,fp):
                                 print "[\033[1;32m+\033[0;0m]帐号:"+user.username[i]+"发帖["+user.biaotitle[num]+"]"+user.biaomessage[num]
                             else:
                                 print "[\033[1;31m-\033[0;0m]帐号:"+user.username[i]+"发帖失败!"
                                 break
                         elif k%2==1:
-                            num=(int)(random.random()*len(user.xuemessage))
-                            if auto.create(fid[k],user.xuetitle[num],user.xuemessage[num],albumid):
+                            num=i#(int)(random.random()*2)+i
+                            if auto.create(fid[k],user.xuetitle[num],user.xuemessage[num],albumid,fp):
                                 print "[\033[1;32m+\033[0;0m]帐号:"+user.username[i]+"发帖["+user.xuetitle[num]+"]"+user.xuemessage[num]
                             else :
                                 print "[\033[1;31m-\033[0;0m]帐号:"+user.username[i]+"发帖失败!"
                                 break
                     elif not test:
-                            num=(int)(random.random()*len(user.biaomessage))
-                            if auto.create(fid[k],user.biaotitle[num],user.biaomessage[num],albumid):
+                            num=i#(int)(random.random()*2)+i
+                            if auto.create(fid[k],user.biaotitle[num],user.biaomessage[num],albumid,fp):
                                 print "[\033[1;32m+\033[0;0m]帐号:"+user.username[i]+"发帖["+user.biaotitle[num]+"]"+user.biaomessage[num]
                             else:
                                 print "[\033[1;31m-\033[0;0m]帐号:"+user.username[i]+"发帖失败!"
                                 break
-                    elif test:
-                        #tid=auto.forum(fid[k])
-                        userid=auto.getuserid()
-                        print "userid:"+userid
-                        if userid:
-                            tid=auto.gettid(userid)
-                            for i,j in zip(auto.tid,auto.fid):
-                                fp.write("%s\n%s\n"%(i,j))
-                        break
-                    time.sleep(15)
-        fp.close()
+                    ran=random.random()*15
+                    time.sleep(55+ran)
+        #fp.close()

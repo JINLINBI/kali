@@ -98,9 +98,11 @@ class Auto(object):
             page=self.s.get(topic_url).text
             pattern=re.compile(r'"topicId":(\d+),')
             fidpattern=re.compile(r'"fid":(\d+),')
+            replypattern=re.compile(r'"replyCount":(\d+),')
             #pattern=re.compile(r'userId=(d+)')
             self.tid=pattern.findall(page)
             self.fid=fidpattern.findall(page)
+            self.replyCount=replypattern.findall(page)
 class Readfile(object):
 	def __init__(self,filename):
 		fp=open(filename,"r")
@@ -171,6 +173,7 @@ if __name__=='__main__':
                     print "userid:"+userid
                     if userid:
                         tid=auto.gettid(userid)
-                        for i,j in zip(auto.tid,auto.fid):
-                            fp.write("%s\n%s\n"%(i,j))
+                        for i,j,z in zip(auto.tid,auto.fid,auto.replyCount):
+                            if z=='0':
+                                fp.write("%s\n%s\n"%(i,j))
         fp.close()

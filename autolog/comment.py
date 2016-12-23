@@ -3,6 +3,7 @@
 import requests,time
 import re
 import random
+import time
 class Auto(object):
 	def __init__(self):
 		self.s=requests.session()	
@@ -85,7 +86,13 @@ class Auto(object):
                     "minContentLength":1,
                     "maxContentLength":500000
 	    }
-            self.s.post(post_url,url_data)
+            page=self.s.post(post_url,url_data).text
+            pattern=re.compile(r'</p>')
+            match=pattern.findall(page)
+            if match:
+                return False
+            else :
+                return True
         def getuserid(self):
             topic_url="http://my.pcauto.com.cn/forum/index.jsp"
             page=self.s.get(topic_url).text
@@ -167,14 +174,20 @@ if __name__=='__main__':
 	user=Readfile(filename)
         count=1
         v=0
-	for i in range(len(user.username)):
-            auto=Auto()
-            auto.login(user.username[i],user.password[i])
-            for k in range(v,v+20):
-                com=(int)(random.random()*len(user.comment))
-                #auto.comment("13133613","14678",user.comment[com])
-                auto.comment(user.tid[k],user.fid[k],user.comment[com])
-                print "%s:[\033[1;32m+\033[0;0m]%s一个回复帖子(%s):%s"%(count,user.username[i],user.tid[k],user.comment[com])
-                count+=1
-            v=v+20
-            print "切换用户回复"
+        for i in range(len(user.username)):
+            if len(user.comment)>0 and len(user.tid)>0:
+                auto=Auto()
+                auto.login(user.username[i],user.password[i])
+                for k in range(v,len(user.tid)) :
+                    com=(int)(random.random()*len(user.comment))
+                    #auto.comment("13133613","14678",user.comment[com])
+                    if auto.comment(user.tid[k],user.fid[k],user.comment[com]):
+                        print "%s:[\033[1;32m+\033[0;0m]%s一个回复帖子(%s):%s"%(count,user.username[i],user.tid[k],user.comment[com])
+                        count+=1
+                    else:
+                        print "%s:[\033[1;31m-\033[0;0m]%s回复帖子(%s)失败!:"%(count,user.username[i],user.tid[k])
+                        v=k
+                        break
+                    ran=random.random()*15
+                    time.sleep(54+ran)
+                print "切换用户回复"
