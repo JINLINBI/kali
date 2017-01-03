@@ -1,4 +1,4 @@
-#coding:utf-8
+#coding:utf8
 #!/usr/bin/python
 import requests,time
 import re
@@ -104,11 +104,12 @@ class Readfile(object):
 				self.mamessage.append(i.rstrip())
 			isU=not isU
 if __name__=='__main__':
-        filename=raw_input("Account filename:")
+        #filename=raw_input("Account filename:")
         #fid={'mazida':'19536','biaozhi':'16725','xuefolan':"14626",'xuefolan':"17644",'xuefolan':'20338',"xuefolan":"16300"}
         fid=['19536','14626','16725','17644','24056','17670','19865','20360','15151','17686','17128','17085','17287','17654','19565','20095','14360','14793','21685','17695','17281','16300','17278','17643','18555','16885','17282','23956','17297','17160','17271','14678','17285','00000','23106','15221','23565','17005','24715','20330','20338']
 	albumid="2129127"
-	user=Readfile(filename)
+	#user=Readfile(filename)
+	user=Readfile("account.txt")
         test=False
 	for i in range(len(user.username)):
 	        auto=Auto()
@@ -121,7 +122,7 @@ if __name__=='__main__':
                             contine
                         if k==0:
                             num=(int)(random.random()*len(user.mamessage))
-                            if auto.create(fid[k],user.matitle[num],user.mamessage[num],albumid):
+                            if False and auto.create(fid[k],user.matitle[num],user.mamessage[num],albumid):
                                 print "[\033[1;32m+\033[0;0m]帐号:"+user.username[i]+"发帖["+user.matitle[num]+"]"+user.mamessage[num]
                             else:
                                 print "[\033[1;31m-\033[0;0m]帐号:"+user.username[i]+"发帖失败!"
