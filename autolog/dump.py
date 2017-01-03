@@ -174,6 +174,6 @@ if __name__=='__main__':
                     if userid:
                         tid=auto.gettid(userid)
                         for i,j,z in zip(auto.tid,auto.fid,auto.replyCount):
-                            if z=='0':
+                            if z=='1':
                                 fp.write("%s\n%s\n"%(i,j))
         fp.close()

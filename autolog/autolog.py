@@ -152,11 +152,11 @@ if __name__=='__main__':
                                 break
                     elif not test:
                             num=i#(int)(random.random()*2)+i
-                            if auto.create(fid[k],user.biaotitle[num],user.biaomessage[num],albumid,fp):
-                                print "[\033[1;32m+\033[0;0m]帐号:"+user.username[i]+"发帖["+user.biaotitle[num]+"]"+user.biaomessage[num]
-                            else:
+                            if auto.create(fid[k],user.xuetitle[num],user.xuemessage[num],albumid,fp):
+                                print "[\033[1;32m+\033[0;0m]帐号:"+user.username[i]+"发帖["+user.xuetitle[num]+"]"+user.xuemessage[num]
+                            else :
                                 print "[\033[1;31m-\033[0;0m]帐号:"+user.username[i]+"发帖失败!"
                                 break
-                    ran=random.random()*15
-                    time.sleep(55+ran)
+                    ran=random.random()*5
+                    time.sleep(2+ran)
         #fp.close()

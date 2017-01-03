@@ -3,7 +3,6 @@
 import requests,time
 import re
 import random
-import threading
 import time
 class Auto(object):
 	def __init__(self):
@@ -63,31 +62,18 @@ class Auto(object):
                     return False
                 else :
                     return True
-        def forum(self,fid):
-            f_url="http://bbs.pcauto.com.cn/forum-%s.html"%fid
-            page=self.s.get(f_url).text
-
-            #pattern=re.compile(r'tid="(.+)" ')
-            #pattern=re.compile(r'userID=(d+)')
-            #pattern=re.compile(r'<tbody>(.+)</tbody>')
-            match=pattern.findall(page)
-            if match:
-                return match
-            else :
-                return "not found"
-        def comment(self,tid,fid,message):
-            post_url="http://bbs.pcauto.com.cn/action/post/create.ajax"
+        def join(self,name,phone,qqnum,message):
+            post_url="http://bbs.pcauto.com.cn/activity/join.ajax"
 	    url_data={
-		    "tid":tid,
-		    "fid":fid,
-		    "message":message,
-                    "needCaptcha":'false',
-                    "captcha":'',
-		    "sengMsg":'true',
-                    "minContentLength":1,
-                    "maxContentLength":500000
+		    "tid":12939683,
+                    "name":name,
+                    "phone":phone,
+                    "persons":1,
+                    "qqNum":qqnum,
+                    "description":message
 	    }
             page=self.s.post(post_url,url_data).text
+            print page
             pattern=re.compile(r'</p>')
             match=pattern.findall(page)
             if match:
@@ -100,50 +86,34 @@ class Readfile(object):
 		isU=True
 		self.username=[]
 		self.password=[]
-                self.comment=[]
-                self.fid=[]
-                self.tid=[]
+                self.xing=[]
+                self.zi=[]
+                self.descib=[]
 		for i in fp:
 		    if isU:
 			self.username.append(i.rstrip())
 		    else :
 			self.password.append(i.rstrip())
 		    isU=not isU
-                fp=open("write.txt","r")
-                isU=True
+                fp=open("xing.txt","r")
+		for i in fp:
+		    self.xing.append(i.rstrip())
+                fp=open("zi.txt","r")
                 for i in fp:
-                    if isU:
-                        self.tid.append(i.rstrip())
-                    else:
-                        self.fid.append(i.rstrip())
-                    isU=not isU
-                fp=open("comment.txt","r")
+                    self.zi.append(i.rstrip())
+                fp=open("join.txt","r")
                 for i in fp:
-                    self.comment.append(i.rstrip())
-def thr3ad(start):
+                    self.descib.append(i.rstrip())
+if __name__=='__main__':
         filename="account.txt"
 	user=Readfile(filename)
-        global count
-        v=0
-        for i in range(start,len(user.username)):
-            if len(user.comment)>0 and len(user.tid)>0:
+        for i in range(len(user.username)):
                 auto=Auto()
                 auto.login(user.username[i],user.password[i])
-                for k in range(v,len(user.tid)) :
-                    com=(int)(random.random()*len(user.comment))
-                    if auto.comment(user.tid[k],user.fid[k],user.comment[com]):
-                        print "%s:[\033[1;32m+\033[0;0m]%s一个回复帖子(%s):%s"%(count,user.username[i],user.tid[k],user.comment[com])
-                        count+=1
-                    else:
-                        print "%s:[\033[1;31m-\033[0;0m]%s回复帖子(%s)失败!:"%(count,user.username[i],user.tid[k])
-                        break
-                    time.sleep(5)
-                print "切换用户回复"
-if __name__=='__main__':
-    count=0
-    t1=threading.Thread(target=thr3ad,args=(0,))
-    t2=threading.Thread(target=thr3ad,args=(20,))
-    t1.start()
-    t2.start()
-    t1.join()
-    t2.join()
+                phone=(int)(random.random()*84564805)+15500000000
+                qq=(int)(random.random()*19878797)+65749878
+                name=user.xing[(int)(random.random()*len(user.xing))]+user.zi[(int)(random.random()*len(user.zi))]+user.zi[(int)(random.random()*len(user.zi))]
+                if auto.join(name,phone,qq,user.descib[i]):
+                    print "%s:[\033[1;32m+\033[0;0m]报名成功"%(user.username[i])
+                else:
+                    print "%s:[\033[1;31m-\033[0;0m]报名失败!"%(user.username[i])
