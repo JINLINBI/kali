@@ -28,8 +28,7 @@ class CalFile:
 				self.count[i]=0
 	def countWords(self):
 		for i in self.words:
-			if self.count.has_key(i):
-				self.count[i]+=1
+			self.count[i]+=1
 		self.count=sorted(self.count.items(),key=lambda y:y[1],reverse=True)
 	def writeFile(self):
 		with open("words.txt","w") as fp:

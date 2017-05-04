@@ -1,5 +1,8 @@
+#!coding:utf-8
 import re
 import os
+import time
+starttime=time.time()
 text=""
 words=[]
 wordsCount={}
@@ -7,7 +10,7 @@ def writeFile():
 	with open("words.txt","w") as fp:
 		for i in wordsCount:
 			fp.write("%s:%s "%(i[0],i[1]))
-	os.system("cat words.txt")
+#	os.system("cat words.txt")
 	return 
 def readfile(filename):
 	global text
@@ -31,11 +34,12 @@ def countWords():
 	global wordsCount
 	global words
 	for i in words:
-		if  wordsCount.has_key(i):
-			wordsCount[i]+=1
+		wordsCount[i]+=1
 if __name__=='__main__':
-	readfile('file.txt')
+	readfile('test.txt')
 	getWords()
 	countWords()
 	wordsCount=sorted(wordsCount.items(),key=lambda y:y[1],reverse=True)
 	writeFile()
+	endtime=time.time()
+	print "所用时间：%s"%(endtime-starttime)
