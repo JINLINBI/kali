@@ -33,7 +33,6 @@ class CalFile:
 	def writeFile(self):
 		with open("words.txt","w") as fp:
 			for i in self.count:
-				pass
 				fp.write("%s:%s "%(i[0],i[1]))
 if __name__=='__main__':
 	starttime=time.time()
