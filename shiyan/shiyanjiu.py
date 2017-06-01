@@ -35,8 +35,9 @@ class CalFile:
 			for i in self.count:
 				pass
 				fp.write("%s:%s "%(i[0],i[1]))
+		os.system("cat words.txt")
 if __name__=='__main__':
 	starttime=time.time()
 	calfile=CalFile('test.txt')
 	endtime=time.time()
-	print "所用时间：%s"%(endtime-starttime)
+	print "\n所用时间：%s"%(endtime-starttime)

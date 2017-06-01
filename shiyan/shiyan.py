@@ -36,10 +36,11 @@ def countWords():
 	for i in words:
 		wordsCount[i]+=1
 if __name__=='__main__':
-	readfile('test.txt')
+	readfile('test2.txt')
 	getWords()
 	countWords()
 	wordsCount=sorted(wordsCount.items(),key=lambda y:y[1],reverse=True)
 	writeFile()
 	endtime=time.time()
+	os.system("cat words.txt")
 	print "所用时间：%s"%(endtime-starttime)
