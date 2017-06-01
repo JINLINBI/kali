@@ -11,11 +11,14 @@ if args.url.find("http://")==-1:
 	args.url="http://"+args.url
 headers={'User-Agent':user_agent}
 req=urllib.request.Request(args.url,headers=headers)
-with urllib.request.urlopen(req,timeout=30) as f:
-	html=f.read().decode("utf-8")
-	if args.outputfile:
-		with open(args.outputfile,"w") as fp:
-			fp.write(html)
-	else:
-		with open("spider.html","w") as fp:
-			fp.write(html)
+try:
+	with urllib.request.urlopen(req,timeout=30) as f:
+		html=f.read().decode("utf-8")
+		if args.outputfile:
+			with open(args.outputfile,"w") as fp:
+				fp.write(html)
+		else:
+			with open("spider.html","w") as fp:
+				fp.write(html)
+except urllib.error.URLError as e:
+	print("出错：{0}".format(e))
