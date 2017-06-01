@@ -2,7 +2,7 @@
 import urllib.request
 import argparse
 parser=argparse.ArgumentParser()
-parser.add_argument("-u",dest="url",type=str,default=None,)
+parser.add_argument("-u",dest="url",type=str,default=None,required=True)
 parser.add_argument("-o",dest="outputfile",type=str,default=None,)
 
 args=parser.parse_args()
