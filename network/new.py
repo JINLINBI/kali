@@ -13,43 +13,36 @@ class Table_ctrl():
         self.tablename=tablename
         self.connect_db()
     def get_timeId(self):
-        now=time.time()
-        intnow=int(now)
-        ms=int((now-intnow)*1000)
-        timeId=time.strftime("%y%m%d%H%M%S",time.localtime(time.time()))+str(ms)
-        print(timeId)
+        timeId=time.strftime("%Y%m%d%H%M%S",time.localtime(time.time()))
+        print(time.localtime(time.time()))
         return timeId
-#    def get_randomId(self):
-#        randomId=1000000000+math.floor(random.random()*999999999)
-#        sql="select * from "+self.tablename+" where ID='"+str(randomId)+"'"
-#        print(sql)
-#        self.cur.execute(sql)
-#        while self.cur.fetchone():
-#                print("fetch again")
-#                randomId=self.get_randomId()
-#        return randomId
+    def get_randomId(self):
+        randomId=1000000000+math.floor(random.random()*999999999)
+        sql="select * from "+self.tablename+" where ID='"+str(randomId)+"'"
+        print(sql)
+        self.cur.execute(sql)
+        while self.cur.fetchone():
+                print("fetch again")
+                randomId=self.get_randomId()
+        return randomId
     def connect_db(self):
         self.conn=pymysql.connect(user="jin",password="123456",database="CHATROOM")
         self.cur=self.conn.cursor()
         print("connected")
     def write_db(self,*data):
-        sql="INSERT INTO "+str(self.tablename)+" VALUES('"+self.get_timeId()+"'"
+        sql="INSERT INTO "+str(self.tablename)+" VALUES('"+str(self.get_timeId())+"'"
         for i in range(len(data)):
             if type(data[i])==type("string"):
-                print("data type is ")
-                print(type(data[i]))
-                sql+=",'"+data[i]+"'"
+                sql+=",'"+str(data[i])+"'"
             else:
-                print("data type is ")
-                print(type(data[i]))
                 sql+=","+str(data[i])
         sql+=")"
         print(sql)
         try:
-            self.cur.execute(sql.encode('utf-8'))
+            self.cur.execute(sql)
             self.conn.commit()
-        except Exception as e:
-            print("writting  database error:%s"%e)
+        except:
+            print("writting  database error:%s")
     def checkExist(self,column,value):
         Exist=False
         if type(value)==type("string"):
@@ -226,4 +219,4 @@ def home():
 if __name__ == '__main__':
 #user.write_db("jiu","password","NINAME",12,"f","123412341234")
     app.debug = True
-    app.run('0.0.0.0',8080,threaded=True)
+    app.run('0.0.0.0',8989,threaded=True)
