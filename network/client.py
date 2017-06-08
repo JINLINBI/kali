@@ -32,20 +32,23 @@ if __name__ == "__main__":
     prompt()
      
     while True:
-        rlist = [sys.stdin, s]
-         
-        read_list, write_list, error_list = select.select(rlist , [], [])
-         
-        for sock in read_list:
-            if sock == s:
-                data = sock.recv(4096)
-                if not data :
-                   print ('\nDisconnected from chat server')
-                   sys.exit()
+        try:
+            rlist = [sys.stdin, s]
+             
+            read_list, write_list, error_list = select.select(rlist , [], [])
+             
+            for sock in read_list:
+                if sock == s:
+                    data = sock.recv(4096)
+                    if not data :
+                       print ('\nDisconnected from chat server')
+                       sys.exit()
+                    else :
+                        sys.stdout.write(data.decode()+"\n")
+                        prompt()
                 else :
-                    sys.stdout.write(data.decode()+"\n")
+                    msg = sys.stdin.readline()
+                    s.send(msg.encode())
                     prompt()
-            else :
-                msg = sys.stdin.readline()
-                s.send(msg.encode())
-                prompt()
+        except KeyboardInterrupt:
+            s.close()

@@ -90,7 +90,7 @@ class Register(Table_ctrl):
         self.password=password
         self.niname=niname
         self.age=0
-        self.sex='NUll'
+        self.sex='N'
         self.picId='NULL'
     def register(self):
         sha1=hashlib.sha1()
@@ -103,8 +103,9 @@ class Register(Table_ctrl):
         self.write_db(self.username,self.password,self.niname,self.age,self.sex,self.picId)
         return True
 def broadcast_data (sock, message):
+    global online
     for socket in CONNECTION_LIST:
-        if socket != server_socket and socket != sock and socket!=sys.stdin:
+        if socket != server_socket and socket != sock and socket!=sys.stdin and online.get(socket):
             try :
                 if message:
                     socket.send(message.encode())
@@ -130,15 +131,27 @@ def receive(channel):
     while len(buf)<size:
         buf+=channel.recv(size-len(buf))
     return pickle.loads(buf)[0]
-def parse_data(data):
+def parse_data(socket,data):
+    global online
+    global online_niname
+    global CONNECTION_LIST
     datalist=data.split(",")
     print(datalist)
     try:
         mes=datalist[0].split(":")[0]
         if mes=="data":
+            if not  online.get(socket):
+                return "Error:loginFirst"
             print("get DATA!!!!")
         elif mes=="register":
-            print("register!")
+            username=datalist[1].split(":")[1]
+            password=datalist[2].split(":")[1]
+            niname=datalist[3].split(":")[1]
+            register_user=Register(username,password,niname)
+            if register_user.register():
+                return "register:successfully"
+            else:
+                return "register:failed"
         elif mes=="login":
             username=datalist[1].split(":")[1]
             password=datalist[2].split(":")[1]
@@ -147,19 +160,37 @@ def parse_data(data):
                 print("login successfully!")
                 tc=Table_ctrl("USER")
                 niname=tc.query_db("USERNAME",username,"NINAME")
+                online[sock]=True
                 if not  niname:
                     niname="NULL"
+                online_niname[sock]=niname
+                broadcast_data(sock,"[%s]entered room\n" %online_niname[sock])
                 return "login:successfully,niname:%s"%niname
             else:
                 del login_user
                 return "login:Failed"
         elif mes=="update":
+            if not  online.get(socket):
+                return "Error:loginFirst"
             print("update!")
         elif mes=="query":
-            print("query")
+            if not  online.get(socket):
+                return "Error:loginFirst"
+            sentence=""
+            for i in CONNECTION_LIST:
+                if online_niname.get(i):
+                    sentence+=","+online_niname.get(i)
+            return "query:successfully"+sentence
         elif mes=="message":
-            broadcast_data(sock,datalist[0].split(":")[1])
-            return "message:get"
+            if not  online.get(socket):
+                return "Error:loginFirst"
+            broadcast_data(sock,"{0}:{1}".format(online_niname[sock],datalist[0].split(":")[1]))
+            return "get:message"
+        elif mes=="logout":
+            broadcast_data(sock,"{0} left the room.".format(online_niname[sock],datalist[0].split(":")[1]))
+            del online_niname[sock]
+            del online[sock]
+            return "logout:successfully"
         else:
             return "Error:Unknown"
     except Exception as e:
@@ -174,6 +205,8 @@ if __name__ == "__main__":
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server_socket.bind(("0.0.0.0", PORT))
     server_socket.listen(10)
+    online={}
+    online_niname={}
  
     CONNECTION_LIST.append(server_socket)
  
@@ -187,10 +220,10 @@ if __name__ == "__main__":
                 sockfd, addr = server_socket.accept()
                 CONNECTION_LIST.append(sockfd)
                 message="Client (%s, %s) connected\t" % addr
+                sockfd.send("fuck you ,what the fuck are you doing".encode())
                 print(message)
                 tc=Table_ctrl("RECORD")
                 tc.write_db(message)
-                broadcast_data(sockfd, "[%s:%s] entered room\n" % addr)
             elif sock==sys.stdin:
                 junk=sys.stdin.readline()
                 running=False
@@ -198,18 +231,17 @@ if __name__ == "__main__":
                 try:
                     data = sock.recv(RECV_BUFFER)
                     if data:
-                        sock.send(parse_data(data.decode().rstrip()).encode())
+                        sock.send(parse_data(sock,data.decode().rstrip()).encode())
+                        print("data type is %s"%(type(data)))
 #data=False#测试时用
 #                   r=receive(sock).decode()
-#                   print(type(r))
-                    if not data:
-                        tc=Table_ctrl("RECORD")
-                        tc.write_db(data.decode().rstrip())
-                        del tc
                 except Exception as e:
                     print("Error:%s"%e)
-                    broadcast_data(sock, "Client (%s, %s) is offline" % addr)
-                    print("Client (%s, %s) is offline" % addr)
+                    if online.get(sock):
+                        del online[sock]
+                    if online_niname.get(sock):
+                        del online_niname[sock]
+                        print("Client (%s) is offline" % online_niname[sock])
                     sock.close()
                     CONNECTION_LIST.remove(sock)
                     continue
