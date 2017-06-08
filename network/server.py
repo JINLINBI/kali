@@ -108,6 +108,7 @@ def broadcast_data (sock, message):
         if socket != server_socket and socket != sock and socket!=sys.stdin and online.get(socket):
             try :
                 if message:
+                    message+="\n"
                     socket.send(message.encode())
 #send(socket,message.encode())
             except Exception as e:
@@ -153,6 +154,8 @@ def parse_data(socket,data):
             else:
                 return "register:failed"
         elif mes=="login":
+            if online.get(socket):
+                return "login:repeat"
             username=datalist[1].split(":")[1]
             password=datalist[2].split(":")[1]
             login_user=Login(username,password)
@@ -164,7 +167,7 @@ def parse_data(socket,data):
                 if not  niname:
                     niname="NULL"
                 online_niname[sock]=niname
-                broadcast_data(sock,"[%s]entered room\n" %online_niname[sock])
+                broadcast_data(sock,"[%s]entered room" %online_niname[sock])
                 return "login:successfully,niname:%s"%niname
             else:
                 del login_user
@@ -220,18 +223,21 @@ if __name__ == "__main__":
                 sockfd, addr = server_socket.accept()
                 CONNECTION_LIST.append(sockfd)
                 message="Client (%s, %s) connected\t" % addr
-                sockfd.send("fuck you ,what the fuck are you doing".encode())
                 print(message)
                 tc=Table_ctrl("RECORD")
                 tc.write_db(message)
             elif sock==sys.stdin:
                 junk=sys.stdin.readline()
-                running=False
+                if junk=="exit":
+                    running=False
+                else:
+                    broadcast_data(sock,"testing\n")
             else:
                 try:
                     data = sock.recv(RECV_BUFFER)
                     if data:
-                        sock.send(parse_data(sock,data.decode().rstrip()).encode())
+                        redata=parse_data(sock,data.decode().rstrip())+"\n"
+                        sock.send(redata.encode())
                         print("data type is %s"%(type(data)))
 #data=False#测试时用
 #                   r=receive(sock).decode()
@@ -240,8 +246,8 @@ if __name__ == "__main__":
                     if online.get(sock):
                         del online[sock]
                     if online_niname.get(sock):
-                        del online_niname[sock]
                         print("Client (%s) is offline" % online_niname[sock])
+                        del online_niname[sock]
                     sock.close()
                     CONNECTION_LIST.remove(sock)
                     continue
