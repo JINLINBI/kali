@@ -50,6 +50,17 @@ class Table_ctrl():
         except:
             print("check value Error!")
         return Exist
+    def query_db(self,kColumn,kValue,queryField):
+        if type(kValue)==type("string"):
+            sql="select %s from %s where %s='%s'"%(queryField,self.tablename,kColumn,kValue)
+        else:
+            sql="select %s from %s where %s=%s"%(queryField,self.tablename,kColumn,kValue)
+        print(sql)
+        try:
+            self.cur.execute(sql)
+            return self.cur.fetchone()[0]
+        except:
+            print("query Error!")
     def __del__(self):
         self.conn.close()
 class Login(Table_ctrl):
@@ -71,7 +82,7 @@ class Login(Table_ctrl):
             self.niname=result[3]
             return True
         else:
-            print("Login Error!")
+            return False
 class Register(Table_ctrl):
     def __init__(self,username,password,niname):
         Table_ctrl.__init__(self,"USER")
@@ -95,7 +106,8 @@ def broadcast_data (sock, message):
     for socket in CONNECTION_LIST:
         if socket != server_socket and socket != sock and socket!=sys.stdin:
             try :
-                socket.send(message.encode())
+                if message:
+                    socket.send(message.encode())
 #send(socket,message.encode())
             except Exception as e:
                 print("Error:%s"%e)
@@ -118,6 +130,41 @@ def receive(channel):
     while len(buf)<size:
         buf+=channel.recv(size-len(buf))
     return pickle.loads(buf)[0]
+def parse_data(data):
+    datalist=data.split(",")
+    print(datalist)
+    try:
+        mes=datalist[0].split(":")[0]
+        if mes=="data":
+            print("get DATA!!!!")
+        elif mes=="register":
+            print("register!")
+        elif mes=="login":
+            username=datalist[1].split(":")[1]
+            password=datalist[2].split(":")[1]
+            login_user=Login(username,password)
+            if login_user.login():
+                print("login successfully!")
+                tc=Table_ctrl("USER")
+                niname=tc.query_db("USERNAME",username,"NINAME")
+                if not  niname:
+                    niname="NULL"
+                return "login:successfully,niname:%s"%niname
+            else:
+                del login_user
+                return "login:Failed"
+        elif mes=="update":
+            print("update!")
+        elif mes=="query":
+            print("query")
+        elif mes=="message":
+            broadcast_data(sock,datalist[0].split(":")[1])
+            return "message:get"
+        else:
+            return "Error:Unknown"
+    except Exception as e:
+        print(" parse data Error:%s"%e)
+        return "Error:Protocol Error!"
 if __name__ == "__main__":
     CONNECTION_LIST = [sys.stdin]
     RECV_BUFFER = 4096 
@@ -150,14 +197,15 @@ if __name__ == "__main__":
             else:
                 try:
                     data = sock.recv(RECV_BUFFER)
+                    if data:
+                        sock.send(parse_data(data.decode().rstrip()).encode())
 #data=False#测试时用
 #                   r=receive(sock).decode()
 #                   print(type(r))
-                    if data:
+                    if not data:
                         tc=Table_ctrl("RECORD")
                         tc.write_db(data.decode().rstrip())
                         del tc
-                        broadcast_data(sock, "\r" + '<' + str(sock.getpeername()) + '> ' + data.decode())
                 except Exception as e:
                     print("Error:%s"%e)
                     broadcast_data(sock, "Client (%s, %s) is offline" % addr)

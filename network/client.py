@@ -8,7 +8,7 @@ def send(channel,*args):
     channel.send(size)
     channel.send(buffers)
 def prompt() :
-    sys.stdout.write('<Username> ')
+    sys.stdout.write('<Username>')
     sys.stdout.flush()
  
 if __name__ == "__main__":
@@ -43,9 +43,9 @@ if __name__ == "__main__":
                    print ('\nDisconnected from chat server')
                    sys.exit()
                 else :
-                    sys.stdout.write(data.decode())
+                    sys.stdout.write(data.decode()+"\n")
                     prompt()
             else :
                 msg = sys.stdin.readline()
-                send(s,msg)
+                s.send(msg.encode())
                 prompt()
