@@ -1,4 +1,4 @@
-import socket, select
+import socket,select
 import time,hashlib,random,sys,struct
 import redis,pymysql
 import redis
@@ -6,24 +6,15 @@ class Table_ctrl():
     def __init__(self,tablename):
         self.tablename=tablename
         self.connect_db()
+    def connect_db(self):
+        self.conn=pymysql.connect(user="jin",password="123456",database="CHATROOM",charset="utf8")
+        self.cur=self.conn.cursor()
     def get_timeId(self):
         now=time.time()
         intnow=int(now)
         ms=int((now-intnow)*1000)
         timeId=time.strftime("%y%m%d%H%M%S",time.localtime(time.time()))+str(ms)
         return timeId
-#    def get_randomId(self):
-#        randomId=1000000000+math.floor(random.random()*999999999)
-#        sql="select * from "+self.tablename+" where ID='"+str(randomId)+"'"
-#        print(sql)
-#        self.cur.execute(sql)
-#        while self.cur.fetchone():
-#                print("fetch again")
-#                randomId=self.get_randomId()
-#        return randomId
-    def connect_db(self):
-        self.conn=pymysql.connect(user="jin",password="123456",database="CHATROOM",charset="utf8")
-        self.cur=self.conn.cursor()
     def write_db(self,*data):
         sql="INSERT INTO "+str(self.tablename)+" VALUES('"+self.get_timeId()+"'"
         for i in range(len(data)):
@@ -241,12 +232,22 @@ if __name__ == "__main__":
                         print("data type is %s"%(type(data)))
 #data=False#测试时用
 #                   r=receive(sock).decode()
+                    else:
+                        if online.get(sock):
+                            del online[sock]
+                        if online_niname.get(sock):
+                            broadcast_cast(sock,"user(%s) is offline."%online_niname)
+                            print("Client (%s) is offline" % online_niname[sock])
+                            del online_niname[sock]
+                        sock.close()
+                        CONNECTION_LIST.remove(sock)
+                        continue
                 except Exception as e:
                     print("Error:%s"%e)
                     if online.get(sock):
                         del online[sock]
                     if online_niname.get(sock):
-                        print("Client (%s) is offline" % online_niname[sock])
+                        print("Client (%s) disconnected." % online_niname[sock])
                         del online_niname[sock]
                     sock.close()
                     CONNECTION_LIST.remove(sock)
