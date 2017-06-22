@@ -202,6 +202,7 @@ if __name__ == "__main__":
     CONNECTION_LIST = [sys.stdin]
     RECV_BUFFER = 4096 
     PORT = 5000
+    r=redis.StrictRedis()
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server_socket.bind(("0.0.0.0", PORT))
@@ -243,14 +244,3 @@ if __name__ == "__main__":
                 except Exception as e:
                         offline(sock)
     server_socket.close()
-
-
-
-def service(conn,addr):
-    while True:
-        data=conn.recv(1024).decode().rstrip()
-        if data:
-            parse_data(data)
-        else:
-            offline(conn)
-
