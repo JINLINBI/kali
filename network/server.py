@@ -208,13 +208,11 @@ if __name__ == "__main__":
     server_socket.listen(10)
     online={}
     online_niname={}
- 
     CONNECTION_LIST.append(server_socket)
-    print(green+"Chat server started on port "+none + str(PORT) )
+    print(green+"Chat server started on port "+none + str(PORT))
     running=True
     while running:
         read_sockets,write_sockets,error_sockets = select.select(CONNECTION_LIST,[],[])
- 
         for sock in read_sockets:
             if sock == server_socket:
                 sockfd, addr = server_socket.accept()
@@ -243,9 +241,6 @@ if __name__ == "__main__":
                 except Exception as e:
                         offline(sock)
     server_socket.close()
-
-
-
 def service(conn,addr):
     while True:
         data=conn.recv(1024).decode().rstrip()
@@ -253,4 +248,3 @@ def service(conn,addr):
             parse_data(data)
         else:
             offline(conn)
-
